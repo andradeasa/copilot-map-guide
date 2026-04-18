@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CoPilot Map Update Guide</title>
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue-100: #0053e2;
+      --blue-140: #002d7a;
+      --spark-100: #ffc220;
+      --spark-10: #fff8e1;
+      --spark-140: #995213;
+      --green-100: #2a8703;
+      --red-100: #ea1100;
+      --gray-10: #f5f5f5;
+      --gray-50: #c0c0c0;
+      --gray-100: #74767c;
+      --gray-160: #2e2f32;
+    }
+
+    body {
+      font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+      color: var(--gray-160);
+      background: white;
+      line-height: 1.5;
+    }
+
+    /* ── Print Optimization ── */
+    @media print {
+      body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      .page { box-shadow: none !important; margin: 0 !important; border-radius: 0 !important; }
+      @page { margin: 0.3in; size: letter; }
+    }
+
+    /* ── Page Container ── */
+    .page {
+      max-width: 8.5in;
+      margin: 0 auto;
+      padding: 0;
+      background: white;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: var(--blue-100);
+      color: white;
+      padding: 20px 28px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-radius: 0 0 12px 12px;
+    }
+
+    .header-left { display: flex; align-items: center; gap: 14px; }
+
+    .header-icon {
+      background: var(--spark-100);
+      color: var(--blue-140);
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
+    .header p  { font-size: 12px; opacity: 0.85; margin-top: 2px; }
+
+    .header-badge {
+      background: var(--spark-100);
+      color: var(--blue-140);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    /* ── Steps Grid ── */
+    .steps-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 14px 20px 10px;
+    }
+
+    /* ── Step Card ── */
+    .step-card {
+      background: white;
+      border: 1.5px solid #e0e4ea;
+      border-radius: 10px;
+      padding: 12px 14px;
+      position: relative;
+      transition: box-shadow 0.2s;
+    }
+
+    .step-card:hover { box-shadow: 0 2px 10px rgba(0,83,226,0.1); }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .step-number {
+      background: var(--blue-100);
+      color: white;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .step-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--blue-140);
+      line-height: 1.2;
+    }
+
+    .step-icon {
+      font-size: 18px;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    .step-body { padding-left: 40px; }
+
+    .step-body ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .step-body li {
+      font-size: 12.5px;
+      padding: 2px 0;
+      position: relative;
+      padding-left: 16px;
+      color: #3a3c40;
+    }
+
+    .step-body li::before {
+      content: '▸';
+      position: absolute;
+      left: 0;
+      color: var(--blue-100);
+      font-weight: 700;
+    }
+
+    /* ── Tip / Warning Callouts ── */
+    .callout {
+      margin-top: 6px;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .callout-tip {
+      background: #e8f5e9;
+      color: var(--green-100);
+      border: 1px solid #c8e6c9;
+    }
+
+    .callout-warn {
+      background: var(--spark-10);
+      color: var(--spark-140);
+      border: 1px solid #ffe0a0;
+    }
+
+    .callout-info {
+      background: #e3f0ff;
+      color: var(--blue-100);
+      border: 1px solid #b3d4fc;
+    }
+
+    .callout-error {
+      background: #ffeaea;
+      color: var(--red-100);
+      border: 1px solid #ffbaba;
+    }
+
+    /* ── Highlight Cards (special steps) ── */
+    .step-card.highlight-green {
+      border-color: var(--green-100);
+      background: linear-gradient(135deg, #f6fff4 0%, white 40%);
+    }
+    .step-card.highlight-green .step-number { background: var(--green-100); }
+
+    .step-card.highlight-warn {
+      border-color: #e6a817;
+      background: linear-gradient(135deg, #fffce8 0%, white 40%);
+    }
+    .step-card.highlight-warn .step-number { background: #d4960a; }
+
+    /* ── Footer ── */
+    .footer {
+      margin: 8px 20px 12px;
+      padding: 10px 16px;
+      background: var(--gray-10);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border: 1px solid #e0e4ea;
+    }
+
+    .footer-spark {
+      font-size: 28px;
+      flex-shrink: 0;
+    }
+
+    .footer-text {
+      font-size: 11.5px;
+      color: var(--gray-100);
+      line-height: 1.4;
+    }
+
+    .footer-text strong { color: var(--gray-160); }
+
+    /* ── Path Breadcrumb Styling ── */
+    .path {
+      background: #eef2f7;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 11.5px;
+      color: var(--blue-100);
+      white-space: nowrap;
+    }
+
+    /* ── Full-width step ── */
+    .full-width { grid-column: 1 / -1; }
+
+    .full-width .step-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <!-- ═══ HEADER ═══ -->
+    <div class="header">
+      <div class="header-left">
+        <div class="header-icon">📡</div>
+        <div>
+          <h1>How to Update CoPilot Maps</h1>
+          <p>Driver Quick-Reference Guide &nbsp;|&nbsp; DC 6816</p>
+        </div>
+      </div>
+      <div class="header-badge">⏱ ~15 min</div>
+    </div>
+
+    <!-- ═══ STEPS GRID ═══ -->
+    <div class="steps-grid">
+
+      <!-- STEP 1 -->
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-number">1</div>
+          <div class="step-title">Connect to Walmart Wi-Fi</div>
+          <div class="step-icon">📶</div>
+        </div>
+        <div class="step-body">
+          <ul>
+            <li>From the tablet home screen, open <span class="path">☰ Menu</span></li>
+            <li>Tap <strong>Connection Manager</strong></li>
+            <li>Select <strong>Wi-Fi Assist</strong></li>
+            <li>Connect to <strong>Walmartwifi</strong></li>
+          </ul>
+          <div class="callout callout-error">🚫 Do NOT select any other Wi-Fi network</div>
+        </div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-number">2</div>
+          <div class="step-title">Open CoPilot</div>
+          <div class="step-icon">🗺️</div>
+        </div>
+        <div class="step-body">
+          <ul>
+            <li>Return to the <strong>home screen</strong></li>
+            <li>Tap the <strong>CoPilot</strong> app icon</li>
+          </ul>
+          <div class="callout callout-info">ℹ️ Make sure Wi-Fi is still connected before continuing</div>
+        </div>
+      </div>
+
+      <!-- STEP 3 -->
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-number">3</div>
+          <div class="step-title">Start the Map Download</div>
+          <div class="step-icon">⬇️</div>
+        </div>
+        <div class="step-body">
+          <ul>
+            <li>Tap <span class="path">☰ Menu</span> in CoPilot</li>
+            <li>Select <span class="path">MyCoPilot → My Maps</span></li>
+            <li>Under <strong>North America</strong>, tap the white arrow</li>
+          </ul>
+          <div class="callout callout-tip">✅ Blue progress bar = download is active (10–15 min)</div>
+        </div>
+      </div>
+
+      <!-- STEP 4 -->
+      <div class="step-card highlight-warn">
+        <div class="step-header">
+          <div class="step-number">4</div>
+          <div class="step-title">Troubleshoot: No Download?</div>
+          <div class="step-icon">⚠️</div>
+        </div>
+        <div class="step-body">
+          <ul>
+            <li>Verify <strong>Walmartwifi</strong> is connected</li>
+            <li>Close all apps (bottom-right button → <strong>Close All</strong>)</li>
+            <li>Start over from <strong>Step 1</strong></li>
+          </ul>
+          <div class="callout callout-warn">⚠️ Only try this if no progress bar appears</div>
+        </div>
+      </div>
+
+      <!-- STEP 5 -->
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-number">5</div>
+          <div class="step-title">Close &amp; Reopen CoPilot</div>
+          <div class="step-icon">🔄</div>
+        </div>
+        <div class="step-body">
+          <ul>
+            <li>When download finishes, CoPilot returns to home</li>
+            <li><span class="path">☰ Menu → ⏻ Power</span> to close CoPilot</li>
+            <li>Reopen the <strong>CoPilot</strong> app</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- STEP 6 -->
+      <div class="step-card highlight-green">
+        <div class="step-header">
+          <div class="step-number">6</div>
+          <div class="step-title">Confirm the Update</div>
+          <div class="step-icon">✔️</div>
+        </div>
+        <div class="step-body">
+          <ul>
+            <li><span class="path">☰ Menu → Settings → About CoPilot</span></li>
+            <li>Verify <strong>Version / Year / Quarter / Build</strong></li>
+          </ul>
+          <div class="callout callout-tip">✅ If it matches ops/trainer info — update is complete!</div>
+        </div>
+      </div>
+
+      <!-- STEP 7 -->
+      <div class="step-card">
+        <div class="step-header">
+          <div class="step-number">7</div>
+          <div class="step-title">Disconnect from Wi-Fi</div>
+          <div class="step-icon">📴</div>
+        </div>
+        <div class="step-body">
+          <ul>
+            <li>Home screen <span class="path">☰ Menu → Connection Manager</span></li>
+            <li>Tap <strong>Disconnect</strong> from Walmartwifi</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- STEP 8 -->
+      <div class="step-card highlight-green">
+        <div class="step-header">
+          <div class="step-number">8</div>
+          <div class="step-title">Reconnect to the Tractor</div>
+          <div class="step-icon">🚛</div>
+        </div>
+        <div class="step-body">
+          <ul>
+            <li>Select <strong>Vehicle</strong></li>
+            <li>Enter <strong>Tractor ID</strong> (NO dashes)</li>
+            <li>Tap <strong>CONNECT</strong></li>
+          </ul>
+          <div class="callout callout-tip">🎉 Done — CoPilot is updated and ready to use!</div>
+        </div>
+      </div>
+
+    </div><!-- /steps-grid -->
+
+    <!-- ═══ FOOTER ═══ -->
+    <div class="footer">
+      <div class="footer-spark">✦</div>
+      <div class="footer-text">
+        <strong>Need help?</strong> Contact your ops manager or trainer if the update doesn't complete.
+        Always verify the version info before heading out. Safe travels! 🚛
+      </div>
+    </div>
+
+  </div><!-- /page -->
+</body>
+</html>
