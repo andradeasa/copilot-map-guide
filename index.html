@@ -256,6 +256,49 @@
       grid-template-columns: 1fr 1fr;
       gap: 4px 20px;
     }
+
+    /* ── QR Code Section ── */
+    .qr-section {
+      margin: 6px 20px 12px;
+      padding: 14px 16px;
+      background: white;
+      border: 1.5px solid #e0e4ea;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .qr-section img {
+      width: 140px;
+      height: auto;
+      flex-shrink: 0;
+    }
+
+    .qr-text {
+      font-size: 13px;
+      color: var(--gray-160);
+      line-height: 1.4;
+    }
+
+    .qr-text strong {
+      font-size: 14px;
+      color: var(--blue-100);
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .qr-text .qr-url {
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 11px;
+      color: var(--blue-100);
+      background: #eef2f7;
+      padding: 2px 7px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-top: 4px;
+    }
   </style>
 </head>
 <body>
@@ -409,6 +452,16 @@
       </div>
 
     </div><!-- /steps-grid -->
+
+    <!-- ═══ QR CODE ═══ -->
+    <div class="qr-section">
+      <img src="data:image/png;base64,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" alt="QR Code - Scan to view this guide on your phone" />
+      <div class="qr-text">
+        <strong>📱 View on Your Phone</strong>
+        Scan this QR code with your phone camera to pull up this guide anytime, anywhere — no Wi-Fi needed.
+        <span class="qr-url">andradeasa.github.io/copilot-map-guide</span>
+      </div>
+    </div>
 
     <!-- ═══ FOOTER ═══ -->
     <div class="footer">
